@@ -1,0 +1,73 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
+
+from app.utils.security import get_password_hash
+from app.repositories.user import UserRepository
+from app.schemas.jwt import TokenSchema, TokenDataSchema
+from app.schemas.user import UserSignUpSchema, UserSignInSchema, UserUpdateSchema
+from app.models.user import User
+from app.utils.security import verify_password
+from app.auth.token import create_access_token
+from app.services.exc.base import NotFoundException
+from app.services.exc.user import UserEmailIsBusyException
+
+
+class UserService:
+    def __init__(self) -> None:
+        self._repository = UserRepository()
+
+    async def get_by_email(self, email: str, session: AsyncSession) -> User:
+        user = await self._repository.get_by_email(email, session)
+        if not user:
+            raise NotFoundException
+        return user
+
+    async def validate_email(self, email: str, session: AsyncSession):
+        if await self._repository.get_by_email(email, session):
+            raise UserEmailIsBusyException(email)
+
+    async def get_user_or_error(self, user_id: int, session: AsyncSession):
+        user = await self._repository.get_by_id(user_id, session)
+        if not user:
+            raise NotFoundException
+        return user
+
+    async def authenticate(
+        self, data: UserSignInSchema, session: AsyncSession
+    ) -> TokenSchema:
+        user = await self._repository.get_by_email(data.email, session)
+        if not user or not verify_password(data.password, user.hashed_password):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+        token_data = TokenDataSchema(sub=user.email)
+        access_token = create_access_token(data=token_data)
+        return TokenSchema(access_token=access_token, token_type="bearer")
+
+    async def create(self, data: UserSignUpSchema, session: AsyncSession) -> User:
+        if data.id and await self._repository.get_by_id(data.id, session):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+        
+        await self.validate_email(data.email, session)
+
+        user = User(
+            name=data.name,
+            email=data.email,
+            hashed_password=get_password_hash(data.password),
+        )
+        return await self._repository.add(user, session)
+
+    async def update(
+        self, current_user_id: int, data: UserUpdateSchema, session: AsyncSession
+    ) -> User:
+        user = await self.get_user_or_error(current_user_id, session)
+        user.name = data.name
+        user.hashed_password = get_password_hash(data.password)
+        return await self._repository.update(user, session)
+
+    async def delete(self, user_id: int, session: AsyncSession):
+        user = await self.get_user_or_error(user_id, session)
+        await self._repository.delete(user, session)
+
+
+async def get_user_service() -> UserService:
+    return UserService()
