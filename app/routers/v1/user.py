@@ -3,13 +3,12 @@ from fastapi import APIRouter, Depends, Security
 from app.db.database import get_db_session, AsyncSession
 from app.models.user import User
 from app.schemas.user import (
-    UserBaseSchema,
     UserSchema,
     UserSignInSchema,
-    UserSignUpSchema,
+    UserCreateSchema,
     UserUpdateSchema,
 )
-from app.schemas.jwt import TokenSchema, TokenDataSchema, FullTokenInfo, AccessTokenOnly
+from app.schemas.jwt import TokenSchema
 from app.services.user import UserService, get_user_service
 from app.auth.universal_jwt import get_current_user
 
@@ -18,7 +17,7 @@ router = APIRouter(prefix="/user", tags=["users"])
 
 @router.post("/signup", response_model=UserSchema)
 async def create(
-    data: UserSignUpSchema,
+    data: UserCreateSchema,
     user_service: UserService = Depends(get_user_service),
     session: AsyncSession = Depends(get_db_session),
 ):
@@ -47,5 +46,3 @@ async def update(
     session: AsyncSession = Depends(get_db_session),
 ) -> User:
     return await user_service.update(current_user.id, data, session)
-
-

@@ -7,11 +7,19 @@ from alembic import context
 # Додаємо батьківську папку (app) до Python path
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Імпортуємо налаштування і моделі
 from core.config import settings  # ← Без "app." бо ми вже в app/
 from models.base import Base
+
+# Import models in order so related classes are registered before relations are configured
+# Ensure Appointment, Service and Barbers are imported before User which references them
+from models.appointments import Appointment
+from models.services import Service
+from models.barbers import Barbers
+from models.admin import Admin
 from models.user import User
 
 # this is the Alembic Config object
@@ -65,6 +73,7 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     import asyncio
+
     asyncio.run(run_async_migrations())
 
 

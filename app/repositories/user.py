@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.user import User
-
+from app.schemas.user import UserSchema
 
 class UserRepository:
     @staticmethod
@@ -14,6 +14,14 @@ class UserRepository:
         result = await session.execute(select(User).where(User.email == email))
         user = result.scalars().first()
         return user
+
+    @staticmethod
+    async def get_all(session: AsyncSession) -> list[UserSchema]:
+        result = await session.execute(select(User))
+        users = result.scalars().all()
+        return [UserSchema.model_validate(
+            user, from_attributes=True
+        ) for user in users]
 
     @staticmethod
     async def add(user: User, session: AsyncSession) -> User:
