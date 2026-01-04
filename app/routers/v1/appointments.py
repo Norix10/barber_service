@@ -61,8 +61,9 @@ async def update(
 @router.delete("/delete/{appoint_id}", status_code=204)
 async def delete(
     appoint_id: int,
-    current_user: User = Security(get_current_user),
+    current_admin: Admin = Security(get_current_admin),
     appoint_service: AppointmentService = Depends(get_appointments_service),
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    await appoint_service.delete(appoint_id, current_user.id, session)
+    appoint = await appoint_service.get_appoint_or_error(appoint_id, session)
+    await appoint_service.delete(appoint, session)

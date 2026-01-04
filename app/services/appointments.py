@@ -21,6 +21,7 @@ from app.services.exc.appointments import (
     AppointmentNotOwnedException,
     AppointmentCannotBeUpdatedException,
 )
+from app.services.exc.base import NotFoundException
 
 
 class AppointmentService:
@@ -28,6 +29,13 @@ class AppointmentService:
         self._repository = AppointmentRepository()
         self._barber_repository = BarbersRepository()
         self._service_repository = AssistanceRepository()
+
+    async def get_appoint_or_error(self, appoint_id: int, session: AsyncSession):
+        appoint = await self._repository.get_by_id(appoint_id, session)
+        if not appoint:
+            raise NotFoundException
+        return appoint
+
 
     async def _validate_barber_exists(self, barber_id: int, session: AsyncSession):
         barber = await self._barber_repository.get_by_id(barber_id, session)
@@ -196,16 +204,49 @@ class AppointmentService:
 
         return await self._repository.update(appoint, session)
 
-    async def delete(
-        self, appoint_id: int, user_id: int, session: AsyncSession
-    ) -> None:
+
+    async def delete(self, appoints: Appointment, session: AsyncSession):
+        await self._repository.delete(appoints, session)
+
+
+    async def update_by_admin(
+        self,
+        appoint_id: int,
+        data: AppointmentUpdateSchema,
+        session: AsyncSession
+    ) -> Appointment:
         appoint = await self._repository.get_by_id(appoint_id, session)
         if not appoint:
             raise AppointmentNotFoundException(appoint_id)
-
-        await self._validate_appointment_ownership(appoint, user_id)
-        await self._repository.delete(appoint, session)
-
+        
+        if data.appointment_datetime is not None:
+            service = await self._validate_service_exists(appoint.service_id, session)
+            
+            await self._validate_user_availability(
+                user_id=appoint.user_id,
+                appointment_datetime=data.appointment_datetime,
+                duration_minutes=service.duration_minutes,
+                session=session,
+                exclude_appointment_id=appoint_id,
+            )
+            
+            await self._validate_barber_availability(
+                barber_id=appoint.barber_id,
+                appointment_datetime=data.appointment_datetime,
+                duration_minutes=service.duration_minutes,
+                session=session,
+                exclude_appointment_id=appoint_id,
+            )
+            
+            appoint.appointment_datetime = data.appointment_datetime
+        
+        if data.status is not None:
+            appoint.status = data.status
+        
+        if data.notes is not None:
+            appoint.notes = data.notes
+        
+        return await self._repository.update(appoint, session)
 
 async def get_appointments_service() -> AppointmentService:
     return AppointmentService()

@@ -36,8 +36,31 @@ class AppointmentUpdateSchema(BaseModel):
     appointment_datetime: datetime | None = Field(
         default=None, examples=["2025-12-26T14:30:00"]
     )
+    status: str | None = Field(
+        default=None,
+        examples=["cancelled"]
+    )
+    notes: str | None = Field(
+        default=None, max_length=500, examples=["Special instructions"]
+    )
+    
+    @field_validator('status')
+    @classmethod
+    def validate_status(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if v != "cancelled":
+            raise ValueError('Status can only be changed to "cancelled"')
+        return v
+
+
+class AppointmentAdminUpdateSchema(BaseModel):
+    appointment_datetime: datetime | None = Field(
+        default=None, examples=["2025-12-26T14:30:00"]
+    )
     status: AppointmentsEnum | None = Field(
-        default=None, examples=[AppointmentsEnum.cancelled]
+        default=None,
+        examples=["verified", "completed", "cancelled"]
     )
     notes: str | None = Field(
         default=None, max_length=500, examples=["Special instructions"]

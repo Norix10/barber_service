@@ -1,22 +1,19 @@
 from fastapi import APIRouter, Depends, Security
 
-from app.core.config import settings
 from app.db.database import AsyncSession, get_db_session
 from app.services.admin import AdminService, get_admin_service
 from app.services.user import UserService, get_user_service
+from app.services.appointments import AppointmentService, get_appointments_service
 from app.schemas.admin import (
-    AdminBaseSchema,
     AdminSchema,
     AdminSignInSchema,
 )
 from app.schemas.user import (
-    UserBaseSchema,
     UserSchema,
-    UserSignInSchema,
-    UserCreateSchema,
     UserUpdateSchema,
 )
-from app.schemas.jwt import TokenSchema, TokenDataSchema, FullTokenInfo, AccessTokenOnly
+from app.schemas.appointments import AppointmentSchema, AppointmentAdminUpdateSchema
+from app.schemas.jwt import TokenSchema
 from app.models.admin import Admin
 from app.auth.universal_jwt import get_current_admin
 
@@ -56,6 +53,17 @@ async def update_user(
     user_service: UserService = Depends(get_user_service),
 ) -> UserSchema:
     return await user_service.update(user_id, data, session)
+
+
+@router.patch("/update/{appoint_id}", response_model=AppointmentSchema)
+async def admin_update(
+    appoint_id: int,
+    data: AppointmentAdminUpdateSchema,
+    current_admin: Admin = Security(get_current_admin),
+    appoint_service: AppointmentService = Depends(get_appointments_service),
+    session: AsyncSession = Depends(get_db_session),
+):
+    return await appoint_service.update_by_admin(appoint_id, data, session)
 
 
 @router.delete("/user/{user_id}", status_code=204)
