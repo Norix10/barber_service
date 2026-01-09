@@ -176,7 +176,7 @@ class AppointmentService:
 
         # Оновлюємо час (якщо передано)
         if data.appointment_datetime is not None:
-            service = await self._validate_service_exists(appoint.service_id, session)
+            service = await self._validate_service_exists(appoint.assistance_id, session)
 
             await self._validate_user_availability(
                 user_id=appoint.user_id,
