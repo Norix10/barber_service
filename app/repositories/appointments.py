@@ -1,4 +1,3 @@
-# app/repositories/appointments.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from datetime import datetime, timedelta
@@ -123,7 +122,7 @@ class AppointmentRepository:
     async def check_user_duplicate(
         user_id: int,
         barber_id: int,
-        service_id: int,
+        assistance_id: int,
         appointment_datetime: datetime,
         session: AsyncSession,
         exclude_appointment_id: int | None = None,  # ← Новий параметр
@@ -132,7 +131,7 @@ class AppointmentRepository:
         conditions = [
             Appointment.user_id == user_id,
             Appointment.barber_id == barber_id,
-            Appointment.service_id == service_id,
+            Appointment.assistance_id == assistance_id,
             Appointment.appointment_datetime == appointment_datetime,
             Appointment.status == AppointmentsEnum.pending,
         ]

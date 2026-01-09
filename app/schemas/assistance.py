@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class ServiceBaseSchema(BaseModel):
+class AssistanceBaseSchema(BaseModel):
     name: str = Field(min_length=2, max_length=30, examples=["Haircut"])
     price: int = Field(gt=0, examples=[500])
     duration_minutes: int = Field(gt=0, examples=[20])
@@ -16,15 +16,15 @@ class ServiceBaseSchema(BaseModel):
         from_attributes = True
 
 
-class ServiceSchema(ServiceBaseSchema):
+class AssistanceSchema(AssistanceBaseSchema):
     id: int
 
 
-class ServiceCreateSchema(ServiceBaseSchema):
+class AssistanceCreateSchema(AssistanceBaseSchema):
     pass
 
 
-class ServiceUpdateSchema(BaseModel):
+class AssistanceUpdateSchema(BaseModel):
     name: str | None = Field(
         default=None, min_length=2, max_length=30, examples=["Haircut"]
     )

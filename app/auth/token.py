@@ -12,7 +12,7 @@ def create_access_token(data: TokenDataSchema):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-def create_refresh_tokenda(data: TokenDataSchema):
+def create_refresh_tokend(data: TokenDataSchema):
     to_encode = data.model_dump().copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRES_MINUTES)
     to_encode.update({"exp": expire})

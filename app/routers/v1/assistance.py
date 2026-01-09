@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Security
 
 from app.db.database import get_db_session, AsyncSession
-from app.models.services import Service
+from app.models.assistance import Assistance
 from app.models.admin import Admin
 from app.schemas.assistance import (
-    ServiceSchema,
-    ServiceCreateSchema,
-    ServiceUpdateSchema,
+    AssistanceSchema,
+    AssistanceCreateSchema,
+    AssistanceUpdateSchema,
 )
 from app.services.assistance import AssistanceService, get_assistance_service
 from app.auth.universal_jwt import get_current_admin
@@ -14,9 +14,9 @@ from app.auth.universal_jwt import get_current_admin
 router = APIRouter(prefix="/assistance", tags=["assistance"])
 
 
-@router.post("/create", response_model=ServiceSchema)
+@router.post("/create", response_model=AssistanceSchema)
 async def create(
-    data: ServiceCreateSchema,
+    data: AssistanceCreateSchema,
     current_admin: Admin = Security(get_current_admin),
     session: AsyncSession = Depends(get_db_session),
     assist_service: AssistanceService = Depends(get_assistance_service),
@@ -32,34 +32,33 @@ async def get_list(
     return await assist_service.get_list(session)
 
 
-@router.get("/{service_id}", response_model=ServiceSchema)
+@router.get("/{assistance_id}", response_model=AssistanceSchema)
 async def get_by_id(
-    service_id: int,
+    assistance_id: int,
     session: AsyncSession = Depends(get_db_session),
     assist_service: AssistanceService = Depends(get_assistance_service),
 ):
-    return await assist_service.get_assistance_or_erorr(service_id, session)
+    return await assist_service.get_assistance_or_erorr(assistance_id, session)
 
-
-@router.patch("/update/{service_id}", response_model=ServiceSchema)
+@router.patch("/update/{assistance_id}", response_model=AssistanceSchema)
 async def update(
-    service_id: int,
-    data: ServiceUpdateSchema,
+    assistance_id: int,
+    data: AssistanceUpdateSchema,
     assist_service: AssistanceService = Depends(get_assistance_service),
     current_admin: Admin = Security(get_current_admin),
     session: AsyncSession = Depends(get_db_session),
 ):
-    return await assist_service.update(service_id, data, session)
+    return await assist_service.update(assistance_id, data, session)
 
 
-@router.delete("/delete/{service_id}", status_code=204)
+@router.delete("/delete/{assistance_id}", status_code=204)
 async def delete_assist(
-    service_id: int,
+    assistance_id: int,
     assist_service: AssistanceService = Depends(get_assistance_service),
     current_admin: Admin = Security(get_current_admin),
     session: AsyncSession = Depends(get_db_session),
 ):
-    assistance = await assist_service.get_assistance_or_erorr(service_id, session)
+    assistance = await assist_service.get_assistance_or_erorr(assistance_id, session)
     await assist_service.delete(assistance, session)
 
 

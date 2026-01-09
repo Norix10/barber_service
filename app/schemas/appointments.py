@@ -6,7 +6,7 @@ from app.schemas.enum.appointments import AppointmentsEnum
 class AppointmentBaseSchema(BaseModel):
     user_id: int = Field(examples=[1])
     barber_id: int = Field(examples=[1])
-    service_id: int = Field(examples=[1])
+    assistance_id: int = Field(examples=[1])
     appointment_datetime: datetime = Field(examples=["2025-12-26T14:30:00"])
     status: AppointmentsEnum = Field(default=AppointmentsEnum.pending)
     notes: str | None = Field(
@@ -25,7 +25,7 @@ class AppointmentSchema(AppointmentBaseSchema):
 
 class AppointmentCreateSchema(BaseModel):
     barber_id: int = Field(examples=[1])
-    service_id: int = Field(examples=[1])
+    assistance_id: int = Field(examples=[1])
     appointment_datetime: datetime = Field(examples=["2025-12-26T14:30:00"])
     notes: str | None = Field(
         default=None, max_length=500, examples=["Special instructions"]
