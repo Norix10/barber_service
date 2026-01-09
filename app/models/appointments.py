@@ -9,7 +9,7 @@ from app.schemas.enum.appointments import AppointmentsEnum
 class Appointment(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     barber_id: Mapped[int] = mapped_column(ForeignKey("barbers.id"), nullable=False)
-    service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
+    assistance_id: Mapped[int] = mapped_column(ForeignKey("assistances.id"), nullable=False)
 
     appointment_datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     status: Mapped[AppointmentsEnum] = mapped_column(
@@ -26,4 +26,4 @@ class Appointment(Base):
 
     user = relationship("User", back_populates="appointments")
     barber = relationship("Barbers", back_populates="appointments")
-    service = relationship("Service", back_populates="appointments")
+    assistance = relationship("Assistance", back_populates="appointments")

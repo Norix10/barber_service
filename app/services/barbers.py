@@ -63,19 +63,19 @@ class BarbersService:
         session: AsyncSession,
     ) -> Barbers:
         barber = await self.get_barber_or_error(barber_id, session)
-        if data.name:
+        if data.name is not None:
             barber.name = data.name
-        if data.email:
+        if data.email is not None:
             barber.email = data.email
-        if data.phone_number:
+        if data.phone_number is not None:
             barber.phone_number = data.phone_number
-        if data.division:
+        if data.division is not None:
             barber.division = data.division
         if data.is_free is not None:
             barber.is_free = data.is_free
-        if data.rating:
+        if data.rating is not None:
             barber.rating = data.rating
-        if data.password:
+        if data.password is not None:
             barber.hashed_password = get_password_hash(data.password)
         return await self._repository.update(barber, session)
 

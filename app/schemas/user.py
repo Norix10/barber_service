@@ -14,7 +14,6 @@ class UserSchema(UserBaseSchema):
 
 
 class UserCreateSchema(UserBaseSchema):
-    id: int | None = None
     password: str = Field(min_length=8, examples=["Str1ngst!"])
 
 

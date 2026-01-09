@@ -51,9 +51,6 @@ class UserService:
         return TokenSchema(access_token=access_token, token_type="bearer")
 
     async def create(self, data: UserCreateSchema, session: AsyncSession) -> User:
-        if data.id and await self._repository.get_by_id(data.id, session):
-            raise ConflictException
-
         await self.validate_email(data.email, session)
 
         user = User(
@@ -67,9 +64,9 @@ class UserService:
         self, current_user_id: int, data: UserUpdateSchema, session: AsyncSession
     ) -> User:
         user = await self.get_user_or_error(current_user_id, session)
-        if data.name:
+        if data.name is not None:
             user.name = data.name
-        if data.password:
+        if data.password is not None:
             user.hashed_password = get_password_hash(data.password)
         return await self._repository.update(user, session)
 

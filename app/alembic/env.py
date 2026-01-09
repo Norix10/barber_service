@@ -17,7 +17,7 @@ from models.base import Base
 # Import models in order so related classes are registered before relations are configured
 # Ensure Appointment, Service and Barbers are imported before User which references them
 from models.appointments import Appointment
-from models.services import Service
+from models.assistance import Assistance
 from models.barbers import Barbers
 from models.admin import Admin
 from models.user import User

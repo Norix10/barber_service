@@ -43,10 +43,10 @@ class AppointmentService:
             raise BarberNotFoundException(barber_id)
         return barber
 
-    async def _validate_service_exists(self, service_id: int, session: AsyncSession):
-        service = await self._service_repository.get_by_id(service_id, session)
+    async def _validate_service_exists(self, assistance_id: int, session: AsyncSession):
+        service = await self._service_repository.get_by_id(assistance_id, session)
         if not service:
-            raise ServiceNotFoundException(service_id)
+            raise ServiceNotFoundException(assistance_id)
         return service
 
     async def _validate_user_availability(
@@ -71,14 +71,14 @@ class AppointmentService:
         self,
         user_id: int,
         barber_id: int,
-        service_id: int,
+        assistance_id: int,
         appointment_datetime: datetime,
         session: AsyncSession,
     ):
         is_unique = await self._repository.check_user_duplicate(
             user_id=user_id,
             barber_id=barber_id,
-            service_id=service_id,
+            assistance_id=assistance_id,
             appointment_datetime=appointment_datetime,
             session=session,
         )
@@ -121,7 +121,7 @@ class AppointmentService:
         self, data: AppointmentCreateSchema, session: AsyncSession
     ) -> Appointment:
         await self._validate_barber_exists(data.barber_id, session)
-        service = await self._validate_service_exists(data.service_id, session)
+        service = await self._validate_service_exists(data.assistance_id, session)
         await self._validate_user_availability(
             user_id=data.user_id,
             appointment_datetime=data.appointment_datetime,
@@ -132,7 +132,7 @@ class AppointmentService:
         await self._validate_no_duplicate(
             user_id=data.user_id,
             barber_id=data.barber_id,
-            service_id=data.service_id,
+            assistance_id=data.assistance_id,
             appointment_datetime=data.appointment_datetime,
             session=session,
         )
@@ -147,7 +147,7 @@ class AppointmentService:
         appointment = Appointment(
             user_id=data.user_id,
             barber_id=data.barber_id,
-            service_id=data.service_id,
+            assistance_id=data.assistance_id,
             appointment_datetime=data.appointment_datetime,
             notes=data.notes,
         )
