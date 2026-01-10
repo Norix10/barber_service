@@ -28,7 +28,7 @@ class AppointmentService:
     def __init__(self) -> None:
         self._repository = AppointmentRepository()
         self._barber_repository = BarbersRepository()
-        self._service_repository = AssistanceRepository()
+        self._assistance_repository = AssistanceRepository()
 
     async def get_appoint_or_error(self, appoint_id: int, session: AsyncSession):
         appoint = await self._repository.get_by_id(appoint_id, session)
@@ -43,11 +43,11 @@ class AppointmentService:
             raise BarberNotFoundException(barber_id)
         return barber
 
-    async def _validate_service_exists(self, assistance_id: int, session: AsyncSession):
-        service = await self._service_repository.get_by_id(assistance_id, session)
-        if not service:
+    async def _validate_assistance_exists(self, assistance_id: int, session: AsyncSession):
+        assistance = await self._assistance_repository.get_by_id(assistance_id, session)
+        if not assistance:
             raise ServiceNotFoundException(assistance_id)
-        return service
+        return assistance
 
     async def _validate_user_availability(
         self,
@@ -121,11 +121,11 @@ class AppointmentService:
         self, data: AppointmentCreateSchema, session: AsyncSession
     ) -> Appointment:
         await self._validate_barber_exists(data.barber_id, session)
-        service = await self._validate_service_exists(data.assistance_id, session)
+        assistance = await self._validate_assistance_exists(data.assistance_id, session)
         await self._validate_user_availability(
             user_id=data.user_id,
             appointment_datetime=data.appointment_datetime,
-            duration_minutes=service.duration_minutes,
+            duration_minutes=assistance.duration_minutes,
             session=session,
         )
 
@@ -140,7 +140,7 @@ class AppointmentService:
         await self._validate_barber_availability(
             barber_id=data.barber_id,
             appointment_datetime=data.appointment_datetime,
-            duration_minutes=service.duration_minutes,
+            duration_minutes=assistance.duration_minutes,
             session=session,
         )
 
@@ -176,12 +176,12 @@ class AppointmentService:
 
         # Оновлюємо час (якщо передано)
         if data.appointment_datetime is not None:
-            service = await self._validate_service_exists(appoint.assistance_id, session)
+            assistance = await self._validate_assistance_exists(appoint.assistance_id, session)
 
             await self._validate_user_availability(
                 user_id=appoint.user_id,
                 appointment_datetime=data.appointment_datetime,
-                duration_minutes=service.duration_minutes,
+                duration_minutes=assistance.duration_minutes,
                 session=session,
                 exclude_appointment_id=appoint_id,
             )
@@ -189,7 +189,7 @@ class AppointmentService:
             await self._validate_barber_availability(
                 barber_id=appoint.barber_id,
                 appointment_datetime=data.appointment_datetime,
-                duration_minutes=service.duration_minutes,
+                duration_minutes=assistance.duration_minutes,
                 session=session,
                 exclude_appointment_id=appoint_id,
             )
@@ -220,12 +220,12 @@ class AppointmentService:
             raise AppointmentNotFoundException(appoint_id)
         
         if data.appointment_datetime is not None:
-            service = await self._validate_service_exists(appoint.service_id, session)
+            assistance = await self._validate_assistance_exists(appoint.assistance_id, session)
             
             await self._validate_user_availability(
                 user_id=appoint.user_id,
                 appointment_datetime=data.appointment_datetime,
-                duration_minutes=service.duration_minutes,
+                duration_minutes=assistance.duration_minutes,
                 session=session,
                 exclude_appointment_id=appoint_id,
             )
@@ -233,7 +233,7 @@ class AppointmentService:
             await self._validate_barber_availability(
                 barber_id=appoint.barber_id,
                 appointment_datetime=data.appointment_datetime,
-                duration_minutes=service.duration_minutes,
+                duration_minutes=assistance.duration_minutes,
                 session=session,
                 exclude_appointment_id=appoint_id,
             )
